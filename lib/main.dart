@@ -1,36 +1,66 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'data/services/weather_api_service.dart';
+import 'data/services/location_service.dart';
+import 'data/services/cache_service.dart';
+import 'data/repositories/weather_repository.dart';
+import 'presentation/providers/weather_provider.dart';
+import 'presentation/screens/index_input_screen.dart';
 
-void main() {
-  runApp(const MyApp());
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+
+  // Initialize shared preferences
+  final prefs = await SharedPreferences.getInstance();
+
+  runApp(MyApp(preferences: prefs));
 }
 
 class MyApp extends StatelessWidget {
-  const MyApp({super.key});
+  final SharedPreferences preferences;
 
-  // This widget is the root of your application.
+  const MyApp({super.key, required this.preferences});
+
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      title: 'Flutter Demo',
-      theme: ThemeData(
-        // This is the theme of your application.
-        //
-        // TRY THIS: Try running your application with "flutter run". You'll see
-        // the application has a purple toolbar. Then, without quitting the app,
-        // try changing the seedColor in the colorScheme below to Colors.green
-        // and then invoke "hot reload" (save your changes or press the "hot
-        // reload" button in a Flutter-supported IDE, or press "r" if you used
-        // the command line to start the app).
-        //
-        // Notice that the counter didn't reset back to zero; the application
-        // state is not lost during the reload. To reset the state, use hot
-        // restart instead.
-        //
-        // This works for code too, not just values: Most code changes can be
-        // tested with just a hot reload.
-        colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
+    // Initialize services
+    final weatherApiService = WeatherApiService();
+    final locationService = LocationService();
+    final cacheService = CacheService(preferences);
+
+    // Initialize repository
+    final weatherRepository = WeatherRepository(
+      apiService: weatherApiService,
+      locationService: locationService,
+      cacheService: cacheService,
+    );
+
+    return MultiProvider(
+      providers: [
+        ChangeNotifierProvider(
+          create: (_) => WeatherProvider(weatherRepository),
+        ),
+      ],
+      child: MaterialApp(
+        title: 'Weather App',
+        debugShowCheckedModeBanner: false,
+        theme: ThemeData(
+          colorScheme: ColorScheme.fromSeed(
+            seedColor: Colors.blue,
+            brightness: Brightness.light,
+          ),
+          useMaterial3: true,
+          appBarTheme: const AppBarTheme(centerTitle: true, elevation: 0),
+          cardTheme: CardThemeData(
+            elevation: 2,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(12),
+            ),
+          ),
+        ),
+        home: const IndexInputScreen(),
       ),
-      home: const MyHomePage(title: 'Flutter Demo Home Page'),
     );
   }
 }
