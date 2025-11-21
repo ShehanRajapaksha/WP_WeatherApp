@@ -54,6 +54,10 @@ class WeatherProvider with ChangeNotifier {
   String? get apiRequestUrl => _apiRequestUrl;
   DateTime? get lastUpdateTime => _lastUpdateTime;
 
+  // Offline state
+  bool _isOffline = false;
+  bool get isOffline => _isOffline;
+
   /// Initialize and load weather data
   Future<void> initialize() async {
     await loadCurrentWeather();
@@ -199,16 +203,20 @@ class WeatherProvider with ChangeNotifier {
       _status = WeatherStatus.loaded;
       _errorMessage = null;
       _lastUpdateTime = DateTime.now();
+      _isOffline = false;
       notifyListeners();
-    } on NetworkException catch (e) {
-      _status = WeatherStatus.error;
-      _errorMessage = e.message;
+    } on NetworkException {
       // Try to load cached data
       final cachedWeather = repository.getCachedWeather();
       if (cachedWeather != null) {
         _currentWeather = cachedWeather;
         _status = WeatherStatus.loaded;
-        _errorMessage = 'Showing cached data (offline)';
+        _isOffline = true;
+        _errorMessage = 'You are offline. Showing cached data.';
+      } else {
+        _status = WeatherStatus.error;
+        _isOffline = true;
+        _errorMessage = 'You are offline and no cached data is available.';
       }
       notifyListeners();
     } catch (e) {
@@ -220,8 +228,16 @@ class WeatherProvider with ChangeNotifier {
 
   /// Refresh weather data
   Future<void> refresh() async {
+    // If we have derived coordinates, use those
+    if (_derivedLatitude != null && _derivedLongitude != null) {
+      await loadWeatherByCoordinates(_derivedLatitude!, _derivedLongitude!);
+      await loadForecast();
+      return;
+    }
+
     try {
       _status = WeatherStatus.loading;
+      _isOffline = false;
       notifyListeners();
 
       _currentWeather = await repository.refreshWeather();
@@ -234,10 +250,26 @@ class WeatherProvider with ChangeNotifier {
 
       _status = WeatherStatus.loaded;
       _errorMessage = null;
+      _lastUpdateTime = DateTime.now();
+      _isOffline = false;
       notifyListeners();
 
       // Also refresh forecast
       await loadForecast();
+    } on NetworkException {
+      // Try to load cached data
+      final cachedWeather = repository.getCachedWeather();
+      if (cachedWeather != null) {
+        _currentWeather = cachedWeather;
+        _status = WeatherStatus.loaded;
+        _isOffline = true;
+        _errorMessage = 'You are offline. Showing cached data.';
+      } else {
+        _status = WeatherStatus.error;
+        _isOffline = true;
+        _errorMessage = 'You are offline and no cached data is available.';
+      }
+      notifyListeners();
     } catch (e) {
       _status = WeatherStatus.error;
       _errorMessage = 'Failed to refresh weather';

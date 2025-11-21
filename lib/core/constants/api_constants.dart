@@ -27,6 +27,6 @@ class ApiConstants {
   }
 
   static String getForecastUrl(double lat, double lon) {
-    return '$baseUrl$forecastEndpoint?$latParam=$lat&$lonParam=$lon&$currentWeatherParam=true&$hourlyParam=$hourlyWeatherVars&$dailyParam=$dailyWeatherVars&$timezoneParam=auto';
+    return '$baseUrl$forecastEndpoint?$latParam=$lat&$lonParam=$lon&$currentWeatherParam=true&$hourlyParam=$hourlyWeatherVars&$dailyParam=$dailyWeatherVars&$timezoneParam=auto&forecast_days=7';
   }
 }

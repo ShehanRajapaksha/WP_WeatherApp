@@ -87,8 +87,21 @@ class WeatherForecast {
 
       final List<ForecastItem> forecastItems = [];
 
-      // Get forecast for next 5 days (120 hours), every 3 hours
-      for (int i = 0; i < times.length && i < 40; i += 3) {
+      // Get current date and tomorrow's date to filter out past data
+      final now = DateTime.now();
+      final tomorrow = DateTime(now.year, now.month, now.day + 1);
+      final fiveDaysFromNow = tomorrow.add(const Duration(days: 5));
+
+      // Get forecast for next 5 days (starting from tomorrow), every 3 hours
+      for (int i = 0; i < times.length && forecastItems.length < 40; i += 3) {
+        final forecastTime = DateTime.parse(times[i]);
+
+        // Only include forecasts from tomorrow onwards, and limit to 5 days
+        if (forecastTime.isBefore(tomorrow) ||
+            forecastTime.isAfter(fiveDaysFromNow)) {
+          continue;
+        }
+
         final weatherCode = (weatherCodes[i] as num).toInt();
         final weatherInfo = _getWeatherInfo(weatherCode);
         final temp = (temps[i] as num).toDouble();
@@ -107,7 +120,7 @@ class WeatherForecast {
             condition: weatherInfo['main']!,
             description: weatherInfo['description']!,
             icon: weatherInfo['icon']!,
-            dateTime: DateTime.parse(times[i]),
+            dateTime: forecastTime,
             pop: (precipProbs[i] as num?)?.toDouble() ?? 0.0,
           ),
         );
