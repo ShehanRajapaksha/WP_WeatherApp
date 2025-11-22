@@ -243,28 +243,52 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                             if (isOffline)
                               Container(
                                 margin: const EdgeInsets.only(bottom: 16),
-                                padding: const EdgeInsets.all(12),
+                                padding: const EdgeInsets.all(16),
                                 decoration: BoxDecoration(
-                                  color: Colors.orange.shade100,
-                                  borderRadius: BorderRadius.circular(12),
-                                  border: Border.all(
-                                    color: Colors.orange.shade400,
-                                    width: 1,
+                                  gradient: LinearGradient(
+                                    begin: Alignment.topLeft,
+                                    end: Alignment.bottomRight,
+                                    colors: [
+                                      Colors.white.withOpacity(0.25),
+                                      Colors.white.withOpacity(0.15),
+                                    ],
                                   ),
+                                  borderRadius: BorderRadius.circular(16),
+                                  border: Border.all(
+                                    color: Colors.white.withOpacity(0.3),
+                                    width: 1.5,
+                                  ),
+                                  boxShadow: [
+                                    BoxShadow(
+                                      color: Colors.black.withOpacity(0.1),
+                                      blurRadius: 15,
+                                      offset: const Offset(0, 5),
+                                    ),
+                                  ],
                                 ),
                                 child: Row(
                                   children: [
-                                    Icon(
-                                      Icons.cloud_off,
-                                      color: Colors.orange.shade900,
+                                    Container(
+                                      padding: const EdgeInsets.all(8),
+                                      decoration: BoxDecoration(
+                                        color: Colors.white.withOpacity(0.2),
+                                        borderRadius: BorderRadius.circular(8),
+                                      ),
+                                      child: const Icon(
+                                        Icons.cloud_off_rounded,
+                                        color: Colors.white,
+                                        size: 24,
+                                      ),
                                     ),
                                     const SizedBox(width: 12),
-                                    Expanded(
+                                    const Expanded(
                                       child: Text(
-                                        'You are offline. Showing cached data.',
+                                        'Offline Mode • Showing cached data',
                                         style: TextStyle(
-                                          color: Colors.orange.shade900,
+                                          color: Colors.white,
                                           fontWeight: FontWeight.w500,
+                                          fontSize: 14,
+                                          letterSpacing: 0.3,
                                         ),
                                       ),
                                     ),
